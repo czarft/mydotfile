@@ -1,0 +1,5 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =3
+let g:netrw_dirhist_1='/home/bopit/.xmonad'
+let g:netrw_dirhist_2='/home/bopit/public_html/tutorial/vi/old/bootstrap/dist'
+let g:netrw_dirhist_3='/home/bopit/public_html/tutorial/vi/old/bootstrap/dist/js'
