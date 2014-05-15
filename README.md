@@ -22,3 +22,4 @@ If you prefer to pick and choose, the following packages can be omitted while st
  * remmina
  * thunar
  * ssh-askpass-gnome
+
