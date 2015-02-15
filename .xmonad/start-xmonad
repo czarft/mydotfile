@@ -38,9 +38,12 @@ xcompmgr -n &
 
 # Activate primary screen 
 #xrandr --output LVDS1 --auto --primary
+
 xrandr | grep 'VGA1 connected' | ifne xrandr --output VGA1 --auto --primary
 
 xrandr | grep 'VGA1 disconnected' | ifne xrandr --output LVDS1 --auto --primary
+
+xrandr | grep 'HDMI1 connected' | ifne xrandr --output HDMI1 --auto --primary
 
 # If we find that a screen is connected via VGA, activate it and position it
 # to the left of the primary screen.
@@ -99,6 +102,7 @@ stalonetray \
 # as Empathy. This prevents prompts you may otherwise get for invalid
 # certificates and the like.
 gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh
+export SSH_AUTH_SOCK="$GNOME_KEYRING_CONTROL/ssh"
 
 # Remap caps lock to left control. This is not strictly speaking
 # xmonad related, but it's handy if you're a vim user.

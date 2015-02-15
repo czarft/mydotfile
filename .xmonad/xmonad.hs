@@ -16,8 +16,8 @@
 
 import XMonad
 import XMonad.Hooks.SetWMName
---import XMonad.Util.NamedScratchpad
-import XMonad.Util.Scratchpad
+import XMonad.Util.NamedScratchpad
+-- import XMonad.Util.Scratchpad
 import XMonad.Layout.Grid
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.IM
@@ -90,11 +90,11 @@ myWorkspaces =
   [
     "7:Chat",  "8:Dbg", "9:Pix",
     "4:DBTool", "5:Dev", "6:Other",
-    "1:Term",  "2:Web", "3:Dev",
+    "1:Web",  "2:Dev", "3:Term",
     "0:VM",    "Extr1", "Extr2"
   ]
 
-startupWorkspace = "1:Term"  -- which workspace do you want to be on after launch?
+startupWorkspace = "1:Web"  -- which workspace do you want to be on after launch?
 
 
 {-
@@ -200,12 +200,30 @@ myLayouts =
   the output.
 -}
 
+-- Scratchpads
+scratchpads     = [
+    -- run conky in its own window, find it by class name, use default
+    -- floating window placement
+    NS "conky" "conky" (className =? "Conky") defaultFloating ,
+    -- run myTerminal, find by class name, use default floating window
+    -- placement
+    NS "launchmain" "urxvtcd -name mainscratchpad -sh 30 -tr +sb -bg black -fg white -vb -sl 2500 -fn -misc-fixed-medium-r-normal-*-15-*-*-*-*-*-iso10646-1" (resource =? "mainscratchpad") manageMainLaunch ,
+    -- another terminal placed on the top half of the screen
+    NS "launchtop" "urxvtcd -name topscratchpad -sh 30 -tr +sb -bg black -fg white -vb -sl 2500 -fn -misc-fixed-medium-r-normal-*-15-*-*-*-*-*-iso10646-1" (resource =? "topscratchpad") manageTopLaunch ]
+  where
+    -- RationalRect x y w h
+    manageMainLaunch = customFloating $ W.RationalRect 0.01 0.49 0.98 0.5
+    
+    -- RationalRect x y w h
+    manageTopLaunch = customFloating $ W.RationalRect 0.01 0.1 0.98 0.3
+
 myKeyBindings =
   [
     ((myModMask, xK_b), sendMessage ToggleStruts)
     , ((myModMask, xK_a), sendMessage MirrorShrink)
     , ((myModMask, xK_z), sendMessage MirrorExpand)
     , ((myModMask, xK_p), spawn "synapse")
+    , ((myModMask, xK_o), namedScratchpadAction scratchpads "launchtop") 
     --, ((myModMask, xK_u), focusUrgent)
 
     , ((0, 0x1008FF12), spawn "amixer -q set Master toggle")
@@ -257,15 +275,19 @@ myKeyBindings =
       editing images.
 -}
 
-myManagementHooks :: [ManageHook]
-myManagementHooks = [
-  resource =? "synapse" --> doIgnore
+--myManagementHooks :: [ManageHook]
+myManagementHooks = (composeAll
+    [resource =? "synapse" --> doIgnore
   , resource =? "stalonetray" --> doIgnore
   , className =? "rdesktop" --> doFloat
   , (className =? "Empathy") --> doF (W.shift "7:Chat")
   , (className =? "Pidgin") --> doF (W.shift "7:Chat")
---  , (className =? "Gimp-2.8") --> doF (W.shift "9:Pix")
-  ]
+--, (className =? "Gimp-2.8") --> doF (W.shift "9:Pix")
+  ]) <+> manageScratchPad
+    where
+    -- Define scratchpad management
+        manageScratchPad :: ManageHook
+        manageScratchPad = namedScratchpadManageHook scratchpads
 
 {-
   Workspace navigation keybindings. This is probably the part of the
@@ -345,7 +367,7 @@ main = do
       windows $ W.greedyView startupWorkspace
       spawn "~/.xmonad/startup-hook"
   , manageHook = manageHook defaultConfig
-      <+> composeAll myManagementHooks
+      <+> myManagementHooks
       <+> manageDocks
   , logHook = dynamicLogWithPP $ xmobarPP {
       ppOutput = hPutStrLn xmproc
